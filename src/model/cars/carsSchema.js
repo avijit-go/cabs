@@ -36,6 +36,11 @@ const CarSchema = mongoose.Schema(
       type: String,
       default: "SUV",
     },
+    isBooked: {
+      type: Boolean,
+      default: false, // if isBooked is true then that means cars is booked...
+    },
+    reviews: [{type: mongoose.Types.ObjectId, ref: "reviews"}]
   },
   { timestamps: true }
 );

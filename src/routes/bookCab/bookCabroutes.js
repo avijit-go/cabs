@@ -8,8 +8,11 @@ const {
   updateBookingDetails,
   getBookingList,
   cancelBooking,
+  claimToken,
 } = require("../../controller/bookcab/bookCabController");
 const Authentication = require("../../middleware/authentication");
+const VerifyAdmin = require("../../middleware/verifyAdmin")
+
 
 /**
  * POST route to create a new booking for a cab ride.
@@ -37,7 +40,7 @@ router.post("/create", Authentication, createBookingCab);
  */
 router.put("/update-details/:id", Authentication, updateBookingDetails);
 
-router.patch("/cancel/:id", Authentication, cancelBooking);
+router.put("/cancel/:id", Authentication, cancelBooking);
 
 /**
  * GET route to retrieve a list of bookings associated with the logged-in user.
@@ -63,7 +66,7 @@ router.get("/user-booking-list", Authentication, getUserBookingList);
  * @param {Function} middleware - Authentication middleware to verify user session
  * @param {Function} handler - Function to handle the retrieval of the booking list
  */
-router.get("/booking-list", Authentication, getBookingList);
+router.get("/list", Authentication, getBookingList);
 
 /**
  * GET route to retrieve details of a specific booking by its ID.
@@ -78,4 +81,5 @@ router.get("/booking-list", Authentication, getBookingList);
  */
 router.get("/:id", Authentication, getSingleBookingDetails);
 
+router.put("/claim/:id", Authentication, claimToken); // pass booking id as parameter
 module.exports = router;

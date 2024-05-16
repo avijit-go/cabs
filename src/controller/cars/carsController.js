@@ -17,13 +17,11 @@ class CarsController {
    */
   async createCarList(req, res, next) {
     try {
-      console.log("********************************")
       // Check if required fields are present in the request body
       if (!req.body.name.trim() || !req.body.description.trim()) {
         // If name or description is missing or empty, throw BadRequest error
         throw createError.BadRequest({ message: "Invalid request" });
       }
-      console.log("IMAGE URL:", req.files.image)
       // Upload image and get image URL
       const imageURL = await uploadImage(req.files.image);
       
@@ -96,11 +94,11 @@ class CarsController {
    */
   async searchCars(req, res, next) {
     try {
+      console.log(req.query)
       // Extract page number and limit from query parameters or use default values
       const page = req.query.page || 1;
       const limit = req.query.limit || 10;
       // Construct the search term based on the provided search key
-      console.log(req.query.searchKey)
       const searchTerm = req.query.searchKey
         ? {
             $or: [{ name: { $regex: req.query.searchKey, $options: "i" } }],

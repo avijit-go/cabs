@@ -16,7 +16,7 @@ const {
   getUserById,
   searchUser,
   deleteUserById,
-  updateProfileStatus,
+  updateProfileStatus,deleteProfile
 } = require("../../controller/user/usercontroller");
 const authentication = require("../../middleware/authentication");
 const verifyUserEmail = require("../../middleware/verifyUserEmail");
@@ -130,6 +130,9 @@ router.post("/forget-password", forgetPassword);
  */
 router.patch("/forget-update-password", verifyUserEmail, forgetUpdatePassword);
 
+router.delete("/delete-profile/:id",authentication, deleteProfile)
+
+// ******* ADMIN APIs ******* //
 /**
  * PATCH route to update the profile status of a user by their ID.
  * @param {string} "/update-profile-status/:id" - The endpoint URL, where ':id' is the ID of the user to update.
@@ -185,6 +188,8 @@ router.get("/:id", verifyAdmin, getUserById);
  * @param {callback} middleware - Controller function to handle user deletion by ID
  * @param {string} id - User ID to delete
  */
-router.get("/:id", verifyAdmin, deleteUserById);
+router.delete("/:id", verifyAdmin, deleteUserById);
+
+
 
 module.exports = router;

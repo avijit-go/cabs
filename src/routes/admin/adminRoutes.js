@@ -104,7 +104,7 @@ const {
    * @param {object} req.body - Request body containing the new profile image data
    * @param {string} req.body.image - Base64 encoded image data representing the new profile image
    */
-  router.put("/profile-image/:id", verifyAdmin, updateProfileImage);
+  router.patch("/profile-image/:id", verifyAdmin, updateProfileImage);
   
   /**
    * Express route to retrieve the list of admin users.

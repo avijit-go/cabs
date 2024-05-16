@@ -126,19 +126,42 @@ class Helper {
 
   async calculateTimeDiff(data) {
     try {
-      const travelDateStr = data.travelDate;
-      const pickupTimeStr = data.pickupTime;
+      const travelDate = data.travelDate;
+      const pickupTime = data.pickupTime;
+      // console.log("****",pickupTimeStr, travelDateStr)
 
       // Parse the date and time strings
-      const [day, month, year] = travelDateStr.split("-");
-      const [hours, minutes] = pickupTimeStr.split(":");
-      const date = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00`);
-      const timestamp = date.getTime();
-      const currentTimeStamp = Date.now();
-      const difference = timestamp - currentTimeStamp;
-      const hoursDifference = difference / (1000 * 60 * 60);
+      // const [day, month, year] = travelDateStr.split("-");
+      // const [hours, minutes] = pickupTimeStr.split(":");
+      // const date = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00`);
+      // const timestamp = date.getTime();
+      // const currentTimeStamp = Date.now();
+      // const difference = timestamp - currentTimeStamp;
+      // const hoursDifference = difference / (1000 * 60 * 60);
 
-      return hoursDifference;
+      // return hoursDifference;
+      // Step 1: Get the current timestamp
+      const now = new Date();
+
+      // Step 2: Define the travel date and pickup time
+      // const travelDate = "2024-05-25";
+      // const pickupTime = "05:00:00"; // 05:00 AM
+
+      // Combine travel date and pickup time into a single timestamp
+      const travelDateTime = new Date(`${travelDate}T${pickupTime}`);
+
+      // Step 3: Calculate the difference in milliseconds
+      const differenceInMilliseconds = travelDateTime - now;
+
+      // Step 4: Convert the difference to hours
+      const differenceInHours = differenceInMilliseconds / (1000 * 60 * 60);
+
+      // Validate if the difference is not greater than 24 hours
+      if (differenceInHours <= 24) {
+        return false;
+      } else {
+        return true;
+      }
     } catch (error) {
       throw createError.BadRequest({ message: error.message });
     }

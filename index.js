@@ -24,13 +24,15 @@ app.use(
 const port = process.env.PORT || 5050;
 
 // user routes
-app.use("/api/user", require("./src/routes/users/userRoutes"));
+app.use("/api/users", require("./src/routes/users/userRoutes"));
 // admin routes
-app.use("/api/admin", require("./src/routes/admin/adminRoutes"));
+app.use("/api/admins", require("./src/routes/admin/adminRoutes"));
 // booking cab route
-app.use("/api/booking", require("./src/routes/bookCab/bookCabroutes"));
-
-app.use("/api/car", require("./src/routes/cars/CarsRoutes"));
+app.use("/api/bookings", require("./src/routes/bookCab/bookCabroutes"));
+// cars route
+app.use("/api/cars", require("./src/routes/cars/CarsRoutes"));
+// reviews router
+app.use("/api/reviews", require("./src/routes/reviews/reviewsRoute"))
 
 app.use(async (req, res, next) => {
   next(createError.NotFound("Page not found"));

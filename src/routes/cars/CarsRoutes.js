@@ -11,12 +11,12 @@ const {
   const VerifyAdmin = require("../../middleware/verifyAdmin");
   const router = require("express").Router();
   
+  router.get("/search-cars", searchCars);
   router.post("/create", VerifyAdmin, createCarList);
   router.get("/list", getCarsList);
-  router.get("/search-cars", searchCars);
   router.get("/:id", getCarById);
-  router.put("/update/:id", updateCarDetails);
-  router.delete("/delete/:id", deleteCarDetails);
+  router.put("/update/:id",VerifyAdmin, updateCarDetails);
+  router.delete("/delete/:id",VerifyAdmin, deleteCarDetails);
   
   module.exports = router;
   

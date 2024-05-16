@@ -330,7 +330,7 @@ class AdminController {
         throw createError.BadRequest({ message: "Invalid request parameter" });
       }
       // Check if request body contains valid email and name
-      else if (!req.body.email.trim() || !req.body.name.trim()) {
+      else if (!req.body.email || !req.body.name) {
         throw createError.BadRequest({ message: "Invalid request" });
       }
       // Update admin's profile data in the database

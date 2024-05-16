@@ -2,6 +2,7 @@
 
 const mongoose = require("mongoose");
 const User = require("../../model/user/userSchema");
+const UserWallet = require("../../model/userWallet/userWallet")
 const createError = require("http-errors");
 const {
   hashPassword,
@@ -62,7 +63,7 @@ class UserController {
             throw createError.BadRequest({ message: "Email already exists" });
           }
           // If user already exists with the same phone number
-          else if (isUserExists.phone === req.body.phone) {
+          else if (isUserExists.phone === Number(req.body.phone)) {
             throw createError.BadRequest({
               message: "Phone number already exists",
             });
@@ -434,9 +435,13 @@ class UserController {
    */
   async getUsersList(req, res, next) {
     try {
+      const page = req.query.page || 1;
+      const limit = req.query.limit || 10;
       // Fetch list of users excluding password field and sorted by creation date
       const users = await User.find({})
-        .select("-password") // Exclude password field
+        .select("-password")
+        .limit(limit)
+        .skip((page-1)*limit) // Exclude password field
         .sort({ createdAt: -1 }); // Sort by 'createdAt' property in descending order
       return res.status(200).json(users);
     } catch (error) {
@@ -513,7 +518,7 @@ class UserController {
         throw createError.BadRequest({ message: "Invalid request parameter" });
       }
       // Find the user by their ID and delete them from the database
-      const user = await User.findByIdAndDelete(req.params.id).select(
+      const user = await User.findByIdAndUpdate(req.params.id, {$set: {status: req.body.status}}, {new: true}).select(
         "-password"
       );
       // Return a success message along with the deleted user's information
@@ -562,6 +567,21 @@ class UserController {
       }
     } catch (error) {
       next(error);
+    }
+  }
+
+  async deleteProfile(req, res, next) {
+    try {
+      const {id} = req.params;
+      if(!id) {
+        throw createError.BadRequest({message: "Invalid user id provided"})
+      }
+      const deletedUserData = await User.findByIdAndDelete(id);
+      await UserWallet.deleteMany({user: id});
+      return res.status(200).json({message: "User successfully deleted account."})
+    }
+    catch(erorr) {
+      next(error)
     }
   }
 }

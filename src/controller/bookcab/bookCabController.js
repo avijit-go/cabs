@@ -3,8 +3,11 @@
 const mongoose = require("mongoose");
 const User = require("../../model/user/userSchema");
 const BookCab = require("../../model/bookCab/bookCabSchema");
+const Car = require("../../model/cars/carsSchema");
+const Wallet = require("../../model/userWallet/userWallet")
 const createError = require("http-errors");
 const { calculateTimeDiff } = require("../../helper/helper");
+const UserWallet = require("../../model/userWallet/userWallet");
 
 class BookCabController {
   /**
@@ -33,10 +36,10 @@ class BookCabController {
       const costPerKM = 100;
       const costPerExtraPessenger = 150;
       const cabFare =
-        2 * costPerKM + costPerExtraPessenger * req.body.extraPassengers;
+      distance * costPerKM + costPerExtraPessenger * req.body.extraPassengers;
 
       // calculate wallet point
-      const walletPoints = distance * 1;
+      // const walletPoints = distance * 1;
 
       // Create new booking data object
       const newBookingData = BookCab({
@@ -50,10 +53,15 @@ class BookCabController {
         extraPassengers: req.body.extraPassengers,
         extraPassengerFare: costPerExtraPessenger * req.body.extraPassengers,
         fare: cabFare,
-        walletPoints,
+        // walletPoints,
+        distance: distance,
         paymentStatus: req.body.paymentStatus,
+        car: req.body.car,
       });
-
+      const isBooked = await Car.findById(req.body.car).select("isBooked")
+      if(isBooked.isBooked) {
+        return res.status(200).json({message: "this car alredy booked"})
+      }
       // Save the new booking data
       const bookingData = await newBookingData.save();
       // Populate user details in booking data
@@ -62,8 +70,7 @@ class BookCabController {
         select: "name email phone profile_img",
       });
 
-      // Update wallet points in user collection
-
+      await Car.findByIdAndUpdate(req.body.car, {$set: {isBooked: true}}, {new: true});
       // Respond with success message and booking data
       return res
         .status(201)
@@ -183,11 +190,13 @@ class BookCabController {
         throw createError.BadRequest({ message: "Invalid request parameter" });
       }
       // Retrieve details of the booking based on the provided ID
-      // const bookingData = await BookCab.findById(req.params.id);
-      // Calculate time difference to check if the booking update is allowed
-      // const timeDifference = await calculateTimeDiff(bookingData);
-      // Check if the booking update is allowed based on a time difference condition
-      // console.log(timeDifference);
+      const bookingData = await BookCab.findById(req.params.id);
+      const result = await calculateTimeDiff(bookingData);
+      if(!result) {
+        throw createError.BadRequest({message: "you cannot change booking details"})
+      }
+      const updatedData = await BookCab.findByIdAndUpdate(req.params.id, req.body, {new: true});
+      return res.status(200).json(updatedData);
     } catch (error) {
       next(error);
     }
@@ -263,8 +272,44 @@ class BookCabController {
       const bookingData = await BookCab.findById(req.params.id);
       // Calculate time difference to check if the booking update is allowed
       const timeDifference = await calculateTimeDiff(bookingData);
+      // if timeDifference is lesser than the 24 hour then user can't update booking status
+      // Otherwise user can update the booking status
+      if(!timeDifference) {
+        throw createError.BadRequest({message: "Connect to admin to cancel your booking"})
+      }
+      // update booking status to inactive 
+      await BookCab.findByIdAndUpdate(req.params.id, {$set: {status: 'inactive'}}, {new: true})
+      // also update the car's status to false i.e car is available for new booking
+      await Car.findByIdAndUpdate(bookingData.car, {$set: {isBooked: false}}, {new: true});
+      return res.status(200).json({message: "Your booking successfully canceled"})
     } catch (error) {
       next(error);
+    }
+  }
+
+  async claimToken(req, res, next) {
+    try {
+      if(!req.params.id) {
+        throw createError.BadRequest({message: "Invalid request"})
+      }
+      const bookingDetails = await BookCab.findById(req.params.id);
+      const walletPoint = bookingDetails.distance * Number(process.env.WALLET_POINT);
+      // updating the car booking status from true to false
+      // if the booking status is false that means other users can booked that car
+      // if the booking status is true then users cannot booked the same car util present booking is completed or canceled..
+      const updateCarStatus = await Car.findByIdAndUpdate(bookingDetails.car, {$set: {isBooked: false}}, {new: true});
+
+      // if the ride is completed then update the wallet document with wallet token
+      const walletData = UserWallet({
+        _id: new mongoose.Types.ObjectId(),
+        user: req.user._id,
+        amount: walletPoint,
+        booking: req.params.id
+      });
+      // await walletData.save();
+      return res.status(200).json({message: "Successfully claimed token"});
+    } catch (error) {
+      next(error)
     }
   }
 }

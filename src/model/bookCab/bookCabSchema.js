@@ -6,6 +6,7 @@ const BookCabSchema = mongoose.Schema(
   {
     _id: { type: mongoose.Schema.Types.ObjectId },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Reference to the user who made the booking
+    car: { type: mongoose.Schema.Types.ObjectId, ref: "Cars" },
     travelDate: { type: String, required: true },
     pickupTime: { type: String, required: true },
     pickupLocation: { type: String, required: true },
@@ -15,7 +16,7 @@ const BookCabSchema = mongoose.Schema(
     extraPassengerFare: { type: Number, default: 0 }, // Extra fare for additional passengers
     fare: { type: Number, required: true }, // Fare calculated based on total distance
     bookingDetails: { type: String }, // Additional booking details
-    walletPoints: { type: Number, default: 0 }, // User's wallet points
+    // walletPoints: { type: Number, default: 0 }, // User's wallet points
     paymentStatus: {
       type: String,
       enum: ["Pending", "Paid"],
@@ -24,6 +25,7 @@ const BookCabSchema = mongoose.Schema(
     paymentMethod: { type: String }, // Payment method used
     paymentDate: { type: Date }, // Date of payment
     status: { type: String, enum: ["active", "inactive"], default: "active" },
+    distance: {type: Number, default: 0}
   },
   { timestamps: true }
 );
